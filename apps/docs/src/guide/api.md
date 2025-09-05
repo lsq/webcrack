@@ -5,15 +5,15 @@ Installation:
 ::: code-group
 
 ```bash [npm]
-npm install webcrack
+npm install @bratel/webcrack
 ```
 
 ```bash [yarn]
-yarn add webcrack
+yarn add @bratel/webcrack
 ```
 
 ```bash [pnpm]
-pnpm add webcrack --allow-build=isolated-vm
+pnpm add @bratel/webcrack --allow-build=isolated-vm
 ```
 
 ## Basic Usage
@@ -25,7 +25,7 @@ All examples are shown with ESM syntax.
 For CommonJS, use the following instead:
 
 ```js
-const { webcrack } = require('webcrack');
+const { webcrack } = require('@bratel/webcrack');
 
 webcrack('const a = 1+1;').then((result) => {
   console.log(result.code); // 'const a = 2;'
@@ -35,7 +35,7 @@ webcrack('const a = 1+1;').then((result) => {
 :::
 
 ```js
-import { webcrack } from 'webcrack';
+import { webcrack } from '@bratel/webcrack';
 
 const result = await webcrack('const a = 1+1;');
 console.log(result.code); // 'const a = 2;'
@@ -45,7 +45,7 @@ Save the deobfuscated code and the unpacked bundle to the given directory:
 
 ```js
 import fs from 'fs';
-import { webcrack } from 'webcrack';
+import { webcrack } from '@bratel/webcrack';
 
 const code = fs.readFileSync('bundle.js', 'utf8');
 const result = await webcrack(code);
@@ -212,7 +212,7 @@ Webcrack's plugin API is similar to Babel's but only the following utility libra
 ### Example Plugin
 
 ```js
-import { webcrack } from 'webcrack';
+import { webcrack } from '@bratel/webcrack';
 
 function myPlugin({ types: t }) {
   return {
@@ -245,7 +245,7 @@ It should be compatible with most Babel plugins as long as they only access the 
 
 ```js
 import removeConsole from 'babel-plugin-transform-remove-console';
-import { webcrack } from 'webcrack';
+import { webcrack } from '@bratel/webcrack';
 
 const result = await webcrack('consol.log(a), b()', {
   plugins: {

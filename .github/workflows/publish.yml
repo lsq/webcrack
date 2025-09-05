@@ -16,22 +16,37 @@ jobs:
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: "22.x"
+          node-version: "24.x"
           cache: "pnpm"
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install -no-frozen-lockfile
 
       - name: Build
         run: |
-          pnpm build --filter webcrack
+          pnpm build --filter ./packages/webcrack
           cp README.md packages/webcrack
 
       # https://github.com/pnpm/pnpm/issues/3141#issuecomment-1305563972
-      - name: Set publishing config
-        run: pnpm config set '//registry.npmjs.org/:_authToken' "${NODE_AUTH_TOKEN}"
+      - name: Publish
+        run: |
+          if git --no-pager log -1 --pretty=%B | grep "^[0-9]\+\.[0-9]\+\.[0-9]\+$";
+          then
+            echo "Publishing regular release"
+            pnpm config set '//registry.npmjs.org/:_authToken' "${NODE_AUTH_TOKEN}"
+            # echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+            npm publish --filter ./packages/webcrack --no-git-checks --access public
+          elif git --no-pager log -1 --pretty=%B | grep "^[0-9]\+\.[0-9]\+\.[0-9]\+-beta\.[0-9]\+$";
+          then
+            echo "Publishing beta release"
+            pnpm config set '//registry.npmjs.org/:_authToken' "${NODE_AUTH_TOKEN}"
+            # echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+            npm publish --filter ./packages/webcrack --no-git-checks --tag beta --access public
+          else
+            echo "Not a release, skipping publish"
+          fi
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
-      - name: Publish
-        run: pnpm publish --filter webcrack --no-git-checks
+      # - name: Publish
+        # run: pnpm publish --filter ./packages/webcrack --no-git-checks

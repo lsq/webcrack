@@ -36,6 +36,6 @@
     "monaco-editor": "^0.52.2",
     "sandybox": "^1.1.2",
     "solid-js": "^1.9.5",
-    "webcrack": "workspace:*"
+    "@bratel/webcrack": "workspace:*"
   }
 }
