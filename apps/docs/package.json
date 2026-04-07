@@ -14,7 +14,7 @@
   "devDependencies": {
     "@webcrack/eslint-config": "workspace:*",
     "@webcrack/typescript-config": "workspace:*",
-    "typescript": "^5.8.2",
+    "typescript": "^5.9.3",
     "vitepress": "1.6.3"
   }
 }

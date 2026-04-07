@@ -47,9 +47,7 @@ export default defineConfig({
       },
     ],
 
-    socialLinks: [
-      { icon: 'github', link: 'https://github.com/lsq/webcrack' },
-    ],
+    socialLinks: [{ icon: 'github', link: 'https://github.com/lsq/webcrack' }],
 
     search: {
       provider: 'local',

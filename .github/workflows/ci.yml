@@ -57,3 +57,54 @@ jobs:
 
       - name: Run tests
         run: pnpm test
+  test-msys2:
+    runs-on: windows-latest
+    defaults:
+      run:
+        # shell: msys2 {0}
+        shell: pwsh
+    env:
+      MSYSTEM: UCRT64
+      CHERE_INVOKING: 1
+      MSYS2_PATH_TYPE: inherit
+    strategy:
+      matrix:
+        node: [ 24 ]
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v6
+      - name: Use Node.js ${{ matrix.node }}
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ matrix.node }}
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          install: jq base-devel binutils git mingw-w64-ucrt-x86_64-toolchain
+          pacboy: >-
+            yarn:p tree:
+          update: true
+          path-type: inherit
+          release: false
+      - name: Install pnpm
+        run: corepack enable pnpm
+      - name: Install
+        run: pnpm install
+      - name: Prepare test
+        run: |
+          corepack enable pnpm
+          cd ./packages/webcrack
+          echo "const ivm = require('isolated-vm');console.log('isolated-vm installed')" > rq.cjs
+          node rq.cjs
+          cd -
+          tree node_modules/.pnpm/isolated-vm@6.1.2/node_modules/isolated-vm/
+        shell: msys2 {0}
+      - name: Test
+        uses: nick-fields/retry@v3
+        with:
+          max_attempts: 3
+          retry_on: error
+          timeout_minutes: 6
+          shell: cmd
+          command: msys2 -c "pnpm test"
+
