@@ -1,0 +1,100 @@
+diff --git a/bin.js b/bin.js
+index c778e0ab9fc691b429f5c46c56a801cf28ab3fcd..c1a3bc682cc3fe365c66b74585c5e0606437a873 100644
+--- a/bin.js
++++ b/bin.js
+@@ -3,6 +3,7 @@
+ var proc = require('child_process')
+ var os = require('os')
+ var path = require('path')
++var isMingw = os.type().startsWith('MINGW32_NT')
+ 
+ if (!buildFromSource()) {
+   proc.exec('node-gyp-build-test', function (err, stdout, stderr) {
+@@ -21,11 +22,13 @@ function build () {
+   var args = [win32 ? 'node-gyp.cmd' : 'node-gyp', 'rebuild']
+ 
+   try {
+-    var pkg = require('node-gyp/package.json')
++    var pkg = isMingw ? require(path.join(path.dirname(process.execPath), '../lib/node_modules/npm/node_modules/node-gyp/package.json')) : require('node-gyp/package.json')
+     args = [
+       process.execPath,
+-      path.join(require.resolve('node-gyp/package.json'), '..', typeof pkg.bin === 'string' ? pkg.bin : pkg.bin['node-gyp']),
+-      'rebuild'
++      path.join(isMingw ? path.join(path.dirname(process.execPath), '../lib/node_modules/npm/node_modules/node-gyp') : path.join(require.resolve('node-gyp/package.json'), '..'), typeof pkg.bin === 'string' ? pkg.bin : pkg.bin['node-gyp']),
++      'rebuild',
++      '-j',
++      'max'
+     ]
+     shell = false
+   } catch (_) {}
+diff --git a/node-gyp-build.js b/node-gyp-build.js
+index 76b96e107474cdd79394262b65ac286db36353e8..f04e388b9c410dfa52c2bb9b7c243510430d2c04 100644
+--- a/node-gyp-build.js
++++ b/node-gyp-build.js
+@@ -1,6 +1,7 @@
+ var fs = require('fs')
+ var path = require('path')
+ var os = require('os')
++var {execSync,  spawnSync } = require('child_process');
+ 
+ // Workaround to fix webpack's build warnings: 'the request of a dependency is an expression'
+ var runtimeRequire = typeof __webpack_require__ === 'function' ? __non_webpack_require__ : require // eslint-disable-line
+@@ -19,7 +20,57 @@ var uv = (process.versions.uv || '').split('.')[0]
+ module.exports = load
+ 
+ function load (dir) {
+-  return runtimeRequire(load.resolve(dir))
++  var resolved
++  try {
++    resolved = load.resolve(dir)
++  } catch (err) {
++      return rebuildTest(dir)
++  }
++
++  // 先用探针测试是否能安全加载
++  if (canLoadNativeModule(resolved)) {
++    return runtimeRequire(resolved);
++  }
++
++  return rebuildTest(dir)
++}
++
++function rebuildTest(dir) {
++  var resolved
++
++  // 触发 rebuild
++  try {
++    var binPath = path.join(__dirname, 'bin.js');
++    execSync(`node "${binPath}"`, {
++      stdio: 'inherit',
++      cwd: path.resolve(dir),
++      shell: os.platform() === 'win32' ? true : undefined
++    });
++
++    // 重建后再次 resolve 并 probe
++    resolved = load.resolve(dir);
++    if (!canLoadNativeModule(resolved)) {
++      throw new Error(`Rebuild succeeded but module still fails to load: ${resolved}`)
++    }
++
++    return runtimeRequire(resolved)
++  } catch (err) {
++    throw new Error(`Failed to rebuild native module: ${err.message}`)
++  }
++}
++
++function canLoadNativeModule(nodePath) {
++  var code = `
++    try {
++      require(${JSON.stringify(nodePath)})
++      console.log('OK')
++      process.exit(0)
++    } catch (e) {
++      process.exit(1)
++    }
++  `;
++  var res = spawnSync(process.execPath, ['-e', code], { timeout: 3000 });
++  return res.status === 0;
+ }
+ 
+ load.resolve = load.path = function (dir) {

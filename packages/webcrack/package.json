@@ -1,6 +1,6 @@
 {
   "name": "@bratel/webcrack",
-  "version": "2.16.1",
+  "version": "2.16.2",
   "description": "Deobfuscate, unminify and unpack bundled javascript",
   "author": "j4k0xb",
   "license": "MIT",
@@ -22,6 +22,8 @@
   },
   "files": [
     "dist",
+    "patches",
+    "scripts/apply-node-gyp-patch.cjs",
     "src/cli-wrapper.js"
   ],
   "engines": {
@@ -36,6 +38,7 @@
     "lint:fix": "eslint src test --fix",
     "format:check": "prettier --check \"{src,test}/**/*.ts\"",
     "format": "prettier --write \"{src,test}/**/*.ts\"",
+    "postinstall": "node scripts/apply-node-gyp-patch.cjs",
     "typecheck": "tsc --noEmit",
     "test": "vitest --no-isolate"
   },
@@ -65,6 +68,8 @@
     "@babel/traverse": "^7.29.0",
     "@babel/types": "^7.29.0",
     "@codemod/matchers": "^1.7.1",
+    "@pnpm/patching.apply-patch": "^1000.0.8",
+    "apply-patch": "^0.1.2",
     "commander": "^13.1.0",
     "debug": "^4.4.3",
     "isolated-vm": "^6.1.2"
