@@ -28,7 +28,7 @@ index c778e0ab9fc691b429f5c46c56a801cf28ab3fcd..c1a3bc682cc3fe365c66b74585c5e060
      shell = false
    } catch (_) {}
 diff --git a/node-gyp-build.js b/node-gyp-build.js
-index 76b96e107474cdd79394262b65ac286db36353e8..f04e388b9c410dfa52c2bb9b7c243510430d2c04 100644
+index 76b96e107474cdd79394262b65ac286db36353e8..cd8aad707b02eb13b450437bda2fd12a325c5ec8 100644
 --- a/node-gyp-build.js
 +++ b/node-gyp-build.js
 @@ -1,6 +1,7 @@
@@ -39,7 +39,12 @@ index 76b96e107474cdd79394262b65ac286db36353e8..f04e388b9c410dfa52c2bb9b7c243510
  
  // Workaround to fix webpack's build warnings: 'the request of a dependency is an expression'
  var runtimeRequire = typeof __webpack_require__ === 'function' ? __non_webpack_require__ : require // eslint-disable-line
-@@ -19,7 +20,57 @@ var uv = (process.versions.uv || '').split('.')[0]
+@@ -15,11 +16,62 @@ var platform = process.env.npm_config_platform || os.platform()
+ var libc = process.env.LIBC || (isAlpine(platform) ? 'musl' : 'glibc')
+ var armv = process.env.ARM_VERSION || (arch === 'arm64' ? '8' : vars.arm_version) || ''
+ var uv = (process.versions.uv || '').split('.')[0]
++var isMingw = os.type().startsWith('MINGW32_NT')
+ 
  module.exports = load
  
  function load (dir) {
@@ -98,3 +103,12 @@ index 76b96e107474cdd79394262b65ac286db36353e8..f04e388b9c410dfa52c2bb9b7c243510
  }
  
  load.resolve = load.path = function (dir) {
+@@ -158,7 +210,7 @@ function matchTags (runtime, abi) {
+     if (tags.abi && tags.abi !== abi && !tags.napi) return false
+     if (tags.uv && tags.uv !== uv) return false
+     if (tags.armv && tags.armv !== armv) return false
+-    if (tags.libc && tags.libc !== libc) return false
++    if (tags.libc && (tags.libc !== libc || (platform === 'win32' && !isMingw))) return false
+ 
+     return true
+   }

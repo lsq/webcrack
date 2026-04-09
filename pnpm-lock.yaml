@@ -9,8 +9,11 @@ overrides:
   tar-fs@>=2.0.0 <2.1.2: '>=2.1.2'
 
 patchedDependencies:
+  isolated-vm:
+    hash: 414d77662eb5c700022f4bb607ee8ea66f2f4630c465e8cf6e55684cd097f707
+    path: patches/isolated-vm.patch
   node-gyp-build:
-    hash: 3753a01e853e9601506cb64724ca17d5af16d83fcc98ba795f1a47632ecacaa2
+    hash: a439d847f31ec2aa942d1ebd7f7694c36d8ee0e90bc6e96e84da1ecfa64ee6a8
     path: patches/node-gyp-build.patch
   vite-plugin-monaco-editor@1.1.0:
     hash: b97b56f2116debef5d0c05abbbf1b4ad161bf6b451dade2421ca5b80173cb4f6
@@ -184,7 +187,7 @@ importers:
         version: 4.4.3
       isolated-vm:
         specifier: ^6.1.2
-        version: 6.1.2
+        version: 6.1.2(patch_hash=414d77662eb5c700022f4bb607ee8ea66f2f4630c465e8cf6e55684cd097f707)
     devDependencies:
       '@types/babel__generator':
         specifier: ^7.27.0
@@ -5359,9 +5362,9 @@ snapshots:
 
   isexe@2.0.0: {}
 
-  isolated-vm@6.1.2:
+  isolated-vm@6.1.2(patch_hash=414d77662eb5c700022f4bb607ee8ea66f2f4630c465e8cf6e55684cd097f707):
     dependencies:
-      node-gyp-build: 4.8.4(patch_hash=3753a01e853e9601506cb64724ca17d5af16d83fcc98ba795f1a47632ecacaa2)
+      node-gyp-build: 4.8.4(patch_hash=a439d847f31ec2aa942d1ebd7f7694c36d8ee0e90bc6e96e84da1ecfa64ee6a8)
 
   isomorphic-timers-promises@1.0.1: {}
 
@@ -5605,7 +5608,7 @@ snapshots:
 
   natural-compare@1.4.0: {}
 
-  node-gyp-build@4.8.4(patch_hash=3753a01e853e9601506cb64724ca17d5af16d83fcc98ba795f1a47632ecacaa2): {}
+  node-gyp-build@4.8.4(patch_hash=a439d847f31ec2aa942d1ebd7f7694c36d8ee0e90bc6e96e84da1ecfa64ee6a8): {}
 
   node-releases@2.0.37: {}
 
