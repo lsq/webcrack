@@ -97,7 +97,7 @@ jobs:
           echo "const ivm = require('isolated-vm');console.log('isolated-vm installed')" > rq.cjs
           node rq.cjs
           cd -
-          tree node_modules/.pnpm/isolated-vm@6.1.2/node_modules/isolated-vm/
+          tree node_modules/.pnpm/isolated-vm@6.1.2_patch*/node_modules/isolated-vm/
         shell: msys2 {0}
       - name: Test
         uses: nick-fields/retry@v3
