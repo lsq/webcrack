@@ -28,7 +28,7 @@ index c778e0ab9fc691b429f5c46c56a801cf28ab3fcd..c1a3bc682cc3fe365c66b74585c5e060
      shell = false
    } catch (_) {}
 diff --git a/node-gyp-build.js b/node-gyp-build.js
-index 76b96e107474cdd79394262b65ac286db36353e8..cd8aad707b02eb13b450437bda2fd12a325c5ec8 100644
+index 76b96e107474cdd79394262b65ac286db36353e8..2770b858af8af0d622688c7e6854f13b346d1350 100644
 --- a/node-gyp-build.js
 +++ b/node-gyp-build.js
 @@ -1,6 +1,7 @@
@@ -39,8 +39,13 @@ index 76b96e107474cdd79394262b65ac286db36353e8..cd8aad707b02eb13b450437bda2fd12a
  
  // Workaround to fix webpack's build warnings: 'the request of a dependency is an expression'
  var runtimeRequire = typeof __webpack_require__ === 'function' ? __non_webpack_require__ : require // eslint-disable-line
-@@ -15,11 +16,62 @@ var platform = process.env.npm_config_platform || os.platform()
- var libc = process.env.LIBC || (isAlpine(platform) ? 'musl' : 'glibc')
+@@ -12,14 +13,108 @@ var runtime = isElectron() ? 'electron' : (isNwjs() ? 'node-webkit' : 'node')
+ 
+ var arch = process.env.npm_config_arch || os.arch()
+ var platform = process.env.npm_config_platform || os.platform()
+-var libc = process.env.LIBC || (isAlpine(platform) ? 'musl' : 'glibc')
++// var libc = process.env.LIBC || (isAlpine(platform) ? 'musl' : 'glibc')
++var libc = process.env.LIBC || (isAlpine(platform) ? 'musl' : (os.type().startsWith('Windows_NT') ? '' : 'glibc'))
  var armv = process.env.ARM_VERSION || (arch === 'arm64' ? '8' : vars.arm_version) || ''
  var uv = (process.versions.uv || '').split('.')[0]
 +var isMingw = os.type().startsWith('MINGW32_NT')
@@ -76,8 +81,17 @@ index 76b96e107474cdd79394262b65ac286db36353e8..cd8aad707b02eb13b450437bda2fd12a
 +      shell: os.platform() === 'win32' ? true : undefined
 +    });
 +
++    var filename = findBuild(path.join(dir, 'build', 'Release'))
++    // var buildFolder = path.join(dir, 'prebuilds', platform + '-' + arch + ((typeof libc === 'string' && rc.libc.trim() !== '') ? ('-' + libc) : ''))
++    var buildFolder = path.join(dir, 'prebuilds', platform + '-' + arch)
++    fs.mkdirSync(buildFolder, {recursive: true})
++    var name = prebuildName(path.parse(filename).name)
++    var dest = path.join(buildFolder, name)
++
++    fs.renameSync(filename, dest)
++
 +    // 重建后再次 resolve 并 probe
-+    resolved = load.resolve(dir);
++    resolved = load.resolve(dir)
 +    if (!canLoadNativeModule(resolved)) {
 +      throw new Error(`Rebuild succeeded but module still fails to load: ${resolved}`)
 +    }
@@ -100,10 +114,63 @@ index 76b96e107474cdd79394262b65ac286db36353e8..cd8aad707b02eb13b450437bda2fd12a
 +  `;
 +  var res = spawnSync(process.execPath, ['-e', code], { timeout: 3000 });
 +  return res.status === 0;
++}
++
++function prebuildName (filename) {
++  var tags = [filename]
++
++  if (abi) {
++    tags.push('abi' + abi)
++  }
++
++  if (uv) {
++    tags.push('uv' + uv)
++  }
++
++  if (armv) {
++    tags.push('armv' + armv)
++  }
++
++  if (libc) {
++    tags.push(libc)
++  }
++
++  return tags.join('.') + '.node'
++}
++
++function findBuild(dir) {
++  const files = fs.readdirSync(dir);
++  const nodeFiles = files.filter(name => /\.node$/i.test(name));
++
++  if (nodeFiles.length === 0) {
++    throw new Error('Could not find build');
++  }
++
++  return path.join(dir, nodeFiles[0]);
  }
  
  load.resolve = load.path = function (dir) {
-@@ -158,7 +210,7 @@ function matchTags (runtime, abi) {
+@@ -30,6 +125,9 @@ load.resolve = load.path = function (dir) {
+     if (process.env[name + '_PREBUILD']) dir = process.env[name + '_PREBUILD']
+   } catch (err) {}
+ 
++  var prebuild = resolve(dir)
++  if (prebuild) return prebuild
++
+   if (!prebuildsOnly) {
+     var release = getFirst(path.join(dir, 'build/Release'), matchBuild)
+     if (release) return release
+@@ -38,9 +136,6 @@ load.resolve = load.path = function (dir) {
+     if (debug) return debug
+   }
+ 
+-  var prebuild = resolve(dir)
+-  if (prebuild) return prebuild
+-
+   var nearby = resolve(path.dirname(process.execPath))
+   if (nearby) return nearby
+ 
+@@ -158,7 +253,7 @@ function matchTags (runtime, abi) {
      if (tags.abi && tags.abi !== abi && !tags.napi) return false
      if (tags.uv && tags.uv !== uv) return false
      if (tags.armv && tags.armv !== armv) return false
