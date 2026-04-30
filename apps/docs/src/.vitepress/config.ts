@@ -2,7 +2,7 @@ import { defineConfig } from 'vitepress';
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
-  title: 'webcrack',
+  title: '@bratel/webcrack',
   description: 'Deobfuscate, unminify and unpack bundled javascript',
   base: '/docs/',
   outDir: '../dist/docs',
@@ -47,9 +47,7 @@ export default defineConfig({
       },
     ],
 
-    socialLinks: [
-      { icon: 'github', link: 'https://github.com/j4k0xb/webcrack' },
-    ],
+    socialLinks: [{ icon: 'github', link: 'https://github.com/lsq/webcrack' }],
 
     search: {
       provider: 'local',
@@ -57,7 +55,7 @@ export default defineConfig({
 
     editLink: {
       pattern:
-        'https://github.com/j4k0xb/webcrack/edit/master/apps/docs/src/:path',
+        'https://github.com/lsq/webcrack/edit/master/apps/docs/src/:path',
     },
   },
 });

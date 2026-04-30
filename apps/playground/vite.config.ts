@@ -40,6 +40,7 @@ export default defineConfig({
       'isolated-vm-6': path.resolve(import.meta.dirname, 'src/_empty.ts'),
       'isolated-vm-7': path.resolve(import.meta.dirname, 'src/_empty.ts'),
       webcrack: path.resolve(
+      '@bratel/webcrack': path.resolve(
         import.meta.dirname,
         '../../packages/webcrack/src',
       ),

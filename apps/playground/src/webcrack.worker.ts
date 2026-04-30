@@ -1,5 +1,5 @@
-import type { Options, Sandbox } from 'webcrack';
-import { webcrack } from 'webcrack';
+import type { Options, Sandbox } from '@bratel/webcrack';
+import { webcrack } from '@bratel/webcrack';
 
 export type WorkerRequest =
   | {

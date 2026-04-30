@@ -1,6 +1,30 @@
-[![Test](https://github.com/j4k0xb/webcrack/actions/workflows/ci.yml/badge.svg)](https://github.com/j4k0xb/webcrack/actions/workflows/ci.yml)
+# `@bratel/webcrack`
+
+This fork of [`webcrack`](https://webcrack.netlify.app/docs/) is intended as a stopgap measure until upstream is ready for my changes (see the [Upstreaming plan](#upstreaming-plan) section).
+
+> [!NOTE]
+> `@bratel/webcrack` has been published to NPM（`ItsHarper/webcrack`）
+## Changes from upstream
+
+* Compatible with node.js 22 and 24 (but not older)
+* Uses babel 8 beta (TODO)
+* Can be used from bundler-free Typescript projects without enabling `skipLibCheck` (and type-safety is improved with `skipLibCheck` enabled) (TODO)
+  * Babel 8 being ESM-only is a core enabler of this
+
+## Upstreaming plan
+
+All of my changes can be upstreamed once upstream is ready to do the following:
+
+* Update `isolated-vm` to version 6 or later
+  * Requires node.js 18 usage to drop (see https://github.com/j4k0xb/webcrack/pull/184#issuecomment-3014185340)
+* Update to babel 8
+  * In beta as of August 2025
+
+# Original `webcrack` README (minimally-adapted)
+
+[![Test](https://github.com/j4k0xb/webcrack/actions/workflows/ci.yml/badge.svg)](https://github.com/lsq/webcrack/actions/workflows/ci.yml)
 [![npm](https://img.shields.io/npm/v/webcrack)](https://www.npmjs.com/package/webcrack)
-[![license](https://img.shields.io/github/license/j4k0xb/webcrack)](https://github.com/j4k0xb/webcrack/blob/master/LICENSE)
+[![license](https://img.shields.io/github/license/j4k0xb/webcrack)](https://github.com/lsq/webcrack/blob/master/LICENSE)
 [![Netlify Status](https://api.netlify.com/api/v1/badges/ba64bf80-7053-4ed8-a282-d3762742c0dd/deploy-status)](https://app.netlify.com/sites/webcrack/deploys)
 
 <p align="center">
@@ -27,15 +51,10 @@ Try it in the [online playground](https://webcrack.netlify.app/) or view the [do
 
 Node.js 22 or 24.
 
-<!-- TODO: add 26 on release -->
-
-> [!NOTE]
-> webcrack depends on [`isolated-vm`](https://github.com/laverdet/isolated-vm), which [does not recommend using odd-numbered Node.js releases](https://github.com/laverdet/isolated-vm#security) because they frequently break ABI/API compatibility with V8.
-
 ## Command Line Interface
 
 ```bash
-npm install -g webcrack@latest
+npm install -g @bratel/webcrack
 ```
 
 Examples:
@@ -51,14 +70,14 @@ webcrack bundle.js -o output-dir
 ## API
 
 ```bash
-npm install webcrack@latest
+npm install @bratel/webcrack
 ```
 
 Examples:
 
 ```js
 import fs from 'fs';
-import { webcrack } from 'webcrack';
+import { webcrack } from '@bratel/webcrack';
 
 const input = fs.readFileSync('bundle.js', 'utf8');
 
@@ -69,13 +88,3 @@ await result.save('output-dir');
 ```
 
 [API Reference](https://webcrack.netlify.app/docs/guide/api.html)
-
-## Donations
-
-If this project has helped you, consider donating to support its development:
-
-- [GitHub Sponsors](https://github.com/sponsors/j4k0xb)
-- Ethereum: `0xb3eFD474Dd8aFA715F563EfA322F6ae9Ae9DfCeA`
-- Bitcoin: `bc1qc3u7ef2rue75f6t8x290r0qk0u84f0ln8ndjun`
-- Solana: `6w9SFAYBxCKdtuj8DEAV9YT5zP68g4PyEkb21AmdxcBq`
-- Monero: `87iYegrerGf1DUsTvUnbsv8gjTMJmzS3idRxHWkCy4iz1Xz5CUnDXy3VkTToSg32LUW3cwNrgLKd1TXRJqJY7MnvVR9yidm`

@@ -5,35 +5,37 @@ Installation:
 ::: code-group
 
 ```bash [npm]
-npm install webcrack@latest
+npm install @bratel/webcrack
 ```
 
 ```bash [yarn]
-yarn add webcrack@latest
+yarn add @bratel/webcrack
 ```
 
 ```bash [pnpm]
-pnpm add webcrack@latest --allow-build=isolated-vm
+pnpm add @bratel/webcrack --allow-build=isolated-vm
+```
+
+## Basic Usage
+
+:::
+
+:::info
+All examples are shown with ESM syntax.
+For CommonJS, use the following instead:
+
+```js
+const { webcrack } = require('@bratel/webcrack');
+
+webcrack('const a = 1+1;').then((result) => {
+  console.log(result.code); // 'const a = 2;'
+});
 ```
 
 :::
 
-## Basic Usage
-
-> [!NOTE]
-> All examples are shown with ESM syntax.
-> For CommonJS, use the following instead:
->
-> ```js
-> const { webcrack } = require('webcrack');
->
-> webcrack('const a = 1+1;').then((result) => {
->   console.log(result.code); // 'const a = 2;'
-> });
-> ```
-
 ```js
-import { webcrack } from 'webcrack';
+import { webcrack } from '@bratel/webcrack';
 
 const result = await webcrack('const a = 1+1;');
 console.log(result.code); // 'const a = 2;'
@@ -43,7 +45,7 @@ Save the deobfuscated code and the unpacked bundle to the given directory:
 
 ```js
 import fs from 'fs';
-import { webcrack } from 'webcrack';
+import { webcrack } from '@bratel/webcrack';
 
 const code = fs.readFileSync('bundle.js', 'utf8');
 const result = await webcrack(code);
@@ -99,14 +101,15 @@ In future versions, this should hopefully not be necessary anymore.
 
 It is an (optionally async) function that takes a `code` parameter and returns the evaluated value.
 
-> [!CAUTION]
-> Simplest possible implementation. Don't run this with untrusted or malicious code.
+::: danger Security warning
+Simplest possible implementation, avoid using due to potentially executing malicious code
+:::
 
 ```js
 const result = await webcrack('function _0x317a(){....', { sandbox: eval });
 ```
 
-This is how the webcrack playground currently implements it in a more secure way, with [sandybox](https://github.com/trentmwillis/sandybox), a Content-Security-Policy to prevent network access and a timeout:
+More secure version with [sandybox](https://github.com/trentmwillis/sandybox) and CSP:
 
 ```js
 const sandbox = await Sandybox.create();
@@ -167,6 +170,10 @@ See [@codemod/matchers](https://github.com/codemod-js/codemod/tree/main/packages
 
 ## Plugins
 
+::: warning Experimental
+This API is only available in the beta version and might change in future versions.
+:::
+
 Webcrack's processing pipeline consists of six key stages:
 
 1. **Parse**: The input code is parsed into an Abstract Syntax Tree (AST).
@@ -205,7 +212,7 @@ Webcrack's plugin API is similar to Babel's but only the following utility libra
 ### Example Plugin
 
 ```js
-import { webcrack } from 'webcrack';
+import { webcrack } from '@bratel/webcrack';
 
 function myPlugin({ types: t }) {
   return {
@@ -238,7 +245,7 @@ It should be compatible with most Babel plugins as long as they only access the 
 
 ```js
 import removeConsole from 'babel-plugin-transform-remove-console';
-import { webcrack } from 'webcrack';
+import { webcrack } from '@bratel/webcrack';
 
 const result = await webcrack('consol.log(a), b()', {
   plugins: {

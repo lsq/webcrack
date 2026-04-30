@@ -8,5 +8,10 @@ allowBuilds:
 
 patchedDependencies:
   vite-plugin-monaco-editor@1.1.0: patches/vite-plugin-monaco-editor@1.1.0.patch
+  node-gyp-build: "patches/node-gyp-build.patch"
+  isolated-vm: "patches/isolated-vm.patch"
 
 autoInstallPeers: true
+overrides:
+  "esbuild@<=0.24.2": ">=0.25.0"
+  "tar-fs@>=2.0.0 <2.1.2": ">=2.1.2"

@@ -1,6 +1,6 @@
 import type { ParentProps } from 'solid-js';
 import { createContext, createSignal, useContext } from 'solid-js';
-import type { Options } from 'webcrack';
+import type { Options } from '@bratel/webcrack';
 import { evalCode } from '../sandbox';
 import type {
   DeobfuscateResult,
