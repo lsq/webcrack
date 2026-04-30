@@ -1,5 +1,5 @@
 {
-  "name": "webcrack",
+  "name": "@bratel/webcrack",
   "private": true,
   "type": "module",
   "scripts": {
@@ -25,7 +25,17 @@
   "packageManager": "pnpm@10.33.2",
   "pnpm": {
     "patchedDependencies": {
-      "vite-plugin-monaco-editor@1.1.0": "patches/vite-plugin-monaco-editor@1.1.0.patch"
-    }
-  }
+      "vite-plugin-monaco-editor@1.1.0": "patches/vite-plugin-monaco-editor@1.1.0.patch",
+      "node-gyp-build": "patches/node-gyp-build.patch",
+      "isolated-vm": "patches/isolated-vm.patch"
+    },
+    "overrides": {
+      "esbuild@<=0.24.2": ">=0.25.0",
+      "tar-fs@>=2.0.0 <2.1.2": ">=2.1.2"
+    },
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "isolated-vm"
+    ]
+   }
 }

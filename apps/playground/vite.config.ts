@@ -38,7 +38,7 @@ export default defineConfig({
       // by replacing it with a dummy module we can reduce the bundle size by 360kb
       '@babel/core': path.resolve(import.meta.dirname, 'src/_empty.ts'),
       'isolated-vm': path.resolve(import.meta.dirname, 'src/_empty.ts'),
-      webcrack: path.resolve(
+      '@bratel/webcrack': path.resolve(
         import.meta.dirname,
         '../../packages/webcrack/src',
       ),

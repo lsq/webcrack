@@ -3,15 +3,14 @@ name: Publish Package to npmjs
 on:
   release:
     types: [published]
-
-permissions:
-  contents: read
-  id-token: write
+  workflow_dispatch: 
 
 jobs:
-  publish:
+  build:
     runs-on: ubuntu-latest
-    environment: production
+    env:
+      TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+      TURBO_TEAM: ${{ vars.TURBO_TEAM }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: pnpm/action-setup@903f9c1a6ebcba6cf41d87230be49611ac97822e # v6.0.3
@@ -21,12 +20,33 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install -no-frozen-lockfile
 
       - name: Build
         run: |
-          pnpm build --filter webcrack
+          pnpm build --filter ./packages/webcrack
           cp README.md packages/webcrack
 
+      # https://github.com/pnpm/pnpm/issues/3141#issuecomment-1305563972
       - name: Publish
-        run: pnpm publish --filter webcrack --no-git-checks --provenance
+        run: |
+          if git --no-pager log -1 --pretty=%B | grep "^[0-9]\+\.[0-9]\+\.[0-9]\+$";
+          then
+            echo "Publishing regular release"
+            pnpm config set '//registry.npmjs.org/:_authToken' "${NODE_AUTH_TOKEN}"
+            # echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+            npm publish --filter ./packages/webcrack --no-git-checks --access public
+          elif git --no-pager log -1 --pretty=%B | grep "^[0-9]\+\.[0-9]\+\.[0-9]\+-beta\.[0-9]\+$";
+          then
+            echo "Publishing beta release"
+            pnpm config set '//registry.npmjs.org/:_authToken' "${NODE_AUTH_TOKEN}"
+            # echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+            npm publish --filter ./packages/webcrack --no-git-checks --tag beta --access public
+          else
+            echo "Not a release, skipping publish"
+          fi
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+
+      # - name: Publish
+        # run: pnpm publish --filter ./packages/webcrack --no-git-checks

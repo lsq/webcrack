@@ -1,0 +1,74 @@
+diff --git a/scripts/run-prebuild.js b/scripts/run-prebuild.js
+index b0edfbd030ff62512a824544da59b436d7c7157d..bda100bceccdd87621031c2b8616b4ca54e6f6e2 100644
+--- a/scripts/run-prebuild.js
++++ b/scripts/run-prebuild.js
+@@ -12,7 +12,7 @@ const targetArgs = [
+   '24.14.0',
+ ];
+ 
+-if (process.platform === 'linux') {
++if (process.platform === 'linux' || os.type().startsWith('MINGW32_NT')) {
+   targetArgs.push('--tag-libc');
+ }
+ 
+@@ -21,7 +21,7 @@ const env = {
+   MAKEFLAGS: `-j${os.cpus().length}`,
+ };
+ 
+-fs.rmSync(path.join(__dirname, '..', 'prebuilds'), { recursive: true, force: true });
++// fs.rmSync(path.join(__dirname, '..', 'prebuilds'), { recursive: true, force: true });
+ 
+ const prebuildifyCli = require.resolve('prebuildify/bin.js');
+ const result = spawnSync(process.execPath, [prebuildifyCli, ...targetArgs], { stdio: 'inherit', env });
+diff --git a/src/lib/thread_pool.cc b/src/lib/thread_pool.cc
+index 2f28ad46fcff445afd9c7322c9f48e5b0c6f6d1a..a3c1ef3178f0aafaeeda074663e8ce7d41cbf68b 100644
+--- a/src/lib/thread_pool.cc
++++ b/src/lib/thread_pool.cc
+@@ -67,7 +67,13 @@ void thread_pool_t::resize(size_t size) {
+ 		}
+ 		lock.unlock();
+ 		for (size_t ii = desired_size; ii < thread_data.size(); ++ii) {
++#if defined (__MINGW32__)
++            if (thread_data[ii].thread.joinable()) {
++				thread_data[ii].thread.detach();
++			}
++#else
+ 			thread_data[ii].thread.join();
++#endif
+ 		}
+ 		thread_data.resize(desired_size);
+ 	}
+diff --git a/src/lib/thread_pool.h b/src/lib/thread_pool.h
+index 00637716403276c85e6ac7e44a2e42a21533f76e..bc97055e7c3292f2f72dc3927010fdee6422b8bf 100644
+--- a/src/lib/thread_pool.h
++++ b/src/lib/thread_pool.h
+@@ -19,7 +19,12 @@ class thread_pool_t {
+ 
+ 		explicit thread_pool_t(size_t desired_size) noexcept : desired_size{desired_size} {}
+ 		thread_pool_t(const thread_pool_t&) = delete;
+-		~thread_pool_t() { resize(0); }
++		~thread_pool_t() { 
++#if defined (__MINGW32__)
++#else
++            resize(0);
++#endif
++        }
+ 		auto operator= (const thread_pool_t&) = delete;
+ 
+ 		void exec(affinity_t& affinity, entry_t* entry, void* param);
+@@ -29,6 +34,15 @@ class thread_pool_t {
+ 		auto new_thread(std::lock_guard<std::mutex>& /*lock*/) -> size_t;
+ 
+ 		struct thread_data_t {
++            ~thread_data_t() {
++				if (thread.joinable()) {
++#if defined (__MINGW32__)
++                    thread.detach();
++#else
++                    thread.join();
++#endif
++                }
++            }
+ 			std::thread thread;
+ 			std::condition_variable cv;
+ 			entry_t* entry = nullptr;
